@@ -1,36 +1,37 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function DashboardPage() {
   const router = useRouter();
+  const [email, setEmail] = useState<string | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
+    const userRaw = localStorage.getItem("user");
 
-    if (!token) {
+    if (!token || !userRaw) {
+      router.replace("/login");
+      return;
+    }
+
+    try {
+      const user = JSON.parse(userRaw);
+      setEmail(user.email);
+    } catch {
       router.replace("/login");
     }
   }, [router]);
 
-  function handleLogout() {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    router.replace("/login");
+  if (!email) {
+    return <p>Loading...</p>;
   }
 
   return (
     <div style={{ padding: 40 }}>
       <h1>Dashboard</h1>
-      <p>Ты залогинен 🎉</p>
-
-      <button
-        onClick={handleLogout}
-        style={{ marginTop: 20 }}
-      >
-        Logout
-      </button>
+      <p>Ты залогинен как <b>{email}</b> 🎉</p>
     </div>
   );
 }
